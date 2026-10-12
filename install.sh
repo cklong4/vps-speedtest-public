@@ -9,13 +9,13 @@ have(){ command -v "$1" >/dev/null 2>&1; }
 install_tools(){
     if [ "$(id -u)" != 0 ]; then printf '%s\n' '缺下载/校验工具；请root运行以自动安装curl和ca-certificates';exit 2;fi
     printf '%s\n' '安装最少基础依赖：下载工具和CA证书；不升级系统，不安装Python。'
-    if have apt-get; then apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends curl ca-certificates coreutils
+    if have apt-get; then apt-get -o Acquire::ForceIPv4=true update && DEBIAN_FRONTEND=noninteractive apt-get -o Acquire::ForceIPv4=true install -y --no-install-recommends curl ca-certificates coreutils
     elif have apk; then apk add --no-cache curl ca-certificates coreutils
     elif have dnf; then dnf install -y curl ca-certificates coreutils
     elif have yum; then yum install -y curl ca-certificates coreutils
     else printf '%s\n' '没有支持的包管理器，请自行安装curl/wget、CA证书、sha256sum';exit 2;fi
 }
-if { ! have curl && ! have wget; } || ! have sha256sum; then install_tools;fi
+if { ! have curl && ! have wget; } || ! have sha256sum || [ ! -r /etc/ssl/certs/ca-certificates.crt ]; then install_tools;fi
 fetch(){
     if have curl;then curl -q --noproxy '*' --fail --silent --show-error --location --retry 2 --connect-timeout 15 --max-time 180 "$1" -o "$2"
     else env -u http_proxy -u https_proxy -u HTTP_PROXY -u HTTPS_PROXY -u ALL_PROXY wget -q -T 180 -O "$2" "$1";fi
