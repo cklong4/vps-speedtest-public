@@ -14,7 +14,7 @@ import (
 
 const endpoint = "https://nezha.hzdbg.com/vps-api"
 
-var version = "3.0.0"
+var version = "3.0.1"
 
 type Session struct {
 	ID     string `json:"id"`
