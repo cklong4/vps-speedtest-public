@@ -7,7 +7,13 @@ VPS 一键网络测试（公共版 v3.1.0）
 
 一行命令
 --------
-已有curl：
+短入口（已有curl）：
+curl -fsSL https://nezha.hzdbg.com/vps.sh | sh
+没有curl但有wget：
+wget -qO- https://nezha.hzdbg.com/vps.sh | sh
+这两个短命令同样自动执行先速度、再线路、四来源与7天报告；依赖检测留在脚本内部。curl和wget都没有的极简系统，仍需先安装下载工具，或使用下面完整自动引导的一行命令。
+
+GitHub源码入口（已有curl）：
 curl -fsSL --max-time 20 https://raw.githubusercontent.com/cklong4/vps-speedtest-public/main/install.sh | sh
 GitHub raw不可达时：
 curl -fsSL --max-time 30 https://nezha.hzdbg.com/vps-download/v3.1.0/install.sh | sh
