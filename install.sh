@@ -2,7 +2,7 @@
 # 公共一键入口：目标不需要Python/Go；只安装下载和证书基础工具。
 set -eu
 REPO=cklong4/vps-speedtest-public
-VERSION=v3.0.0
+VERSION=v3.0.1
 case "$(uname -s)" in Linux) ;; *) printf '%s\n' '仅支持Linux VPS';exit 2;; esac
 case "$(uname -m)" in x86_64|amd64) ARCH=amd64;; aarch64|arm64) ARCH=arm64;; *) printf '%s\n' '不支持的CPU架构；当前提供amd64/arm64';exit 2;; esac
 have(){ command -v "$1" >/dev/null 2>&1; }
