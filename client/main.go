@@ -14,7 +14,7 @@ import (
 
 const endpoint = "https://nezha.hzdbg.com/vps-api"
 
-var version = "3.0.2"
+var version = "3.1.0"
 
 type Session struct {
 	ID     string `json:"id"`
@@ -144,6 +144,10 @@ func run() int {
 				announced = true
 			}
 			if job.Status == "completed" || job.Status == "incomplete" || job.Status == "failed" || job.Status == "interrupted" {
+				if job.Report == "" {
+					fmt.Fprintln(os.Stderr, "本轮未生成最终报告:", job.Error, "；原始测量可能仍在按既定截止收尾，稍后用--resume查看，不要重复创建。")
+					return 1
+				}
 				fmt.Println(job.Report)
 				file := filepath.Join(*reportDir, "vps-network-"+job.ID+".txt")
 				if e := os.WriteFile(file, []byte(job.Report), 0600); e != nil {

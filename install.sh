@@ -2,7 +2,7 @@
 # 公共一键入口：目标不需要Python/Go；只安装下载和证书基础工具。
 set -eu
 REPO=cklong4/vps-speedtest-public
-VERSION=v3.0.2
+VERSION=v3.1.0
 case "$(uname -s)" in Linux) ;; *) printf '%s\n' '仅支持Linux VPS';exit 2;; esac
 case "$(uname -m)" in x86_64|amd64) ARCH=amd64;; aarch64|arm64) ARCH=arm64;; *) printf '%s\n' '不支持的CPU架构；当前提供amd64/arm64';exit 2;; esac
 have(){ command -v "$1" >/dev/null 2>&1; }
@@ -17,8 +17,8 @@ install_tools(){
 }
 if { ! have curl && ! have wget; } || ! have sha256sum || [ ! -r /etc/ssl/certs/ca-certificates.crt ]; then install_tools;fi
 fetch(){
-    if have curl;then curl -q --noproxy '*' --fail --silent --show-error --location --retry 2 --connect-timeout 15 --max-time 180 "$1" -o "$2"
-    else env -u http_proxy -u https_proxy -u HTTP_PROXY -u HTTPS_PROXY -u ALL_PROXY wget -q -T 180 -O "$2" "$1";fi
+    if have curl;then curl -q --noproxy '*' --fail --silent --show-error --location --connect-timeout 10 --max-time 35 "$1" -o "$2"
+    else env -u http_proxy -u https_proxy -u HTTP_PROXY -u HTTPS_PROXY -u ALL_PROXY wget -q -T 35 -O "$2" "$1";fi
 }
 DIR=$(mktemp -d "${TMPDIR:-/tmp}/vps-netcheck.XXXXXXXX")
 trap 'rm -rf "$DIR"' EXIT
@@ -26,14 +26,16 @@ trap 'exit 130' INT
 trap 'exit 143' TERM
 FILE=vps-netcheck-linux-$ARCH
 BASE=https://github.com/$REPO/releases/download/$VERSION
+MIRROR=https://nezha.hzdbg.com/vps-download/$VERSION
 printf '%s\n' "下载 $VERSION 静态程序（$ARCH），无需预装Python3。"
 # 发布包和校验表同样经过正常HTTPS，不关闭证书验证。
 if ! fetch "$BASE/SHA256SUMS" "$DIR/SHA256SUMS";then
-    printf '%s\n' '发布下载失败，尝试安装/更新最少CA证书工具后重试一次。'
-    install_tools
-    fetch "$BASE/SHA256SUMS" "$DIR/SHA256SUMS"
+    printf '%s\n' 'GitHub发布CDN不可达，改用同版HTTPS镜像（仍校验SHA256）。'
+    fetch "$MIRROR/SHA256SUMS" "$DIR/SHA256SUMS"
 fi
-fetch "$BASE/$FILE" "$DIR/$FILE"
+if ! fetch "$BASE/$FILE" "$DIR/$FILE";then
+    fetch "$MIRROR/$FILE" "$DIR/$FILE"
+fi
 EXPECTED=
 while read -r HASH NAME;do
     if [ "$NAME" = "$FILE" ];then EXPECTED=$HASH;fi
